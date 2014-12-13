@@ -1,0 +1,842 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stock Exchange speak!</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="author" content="">
+
+
+<style type="text/css">
+body {
+	padding-top: 20px;
+	padding-bottom: 40px;
+}
+
+/* Custom container */
+.container-narrow {
+	margin: 0 auto;
+	max-width: 700px;
+}
+
+.container-narrow>hr {
+	margin: 30px 0;
+}
+
+/* Main marketing message and sign up button */
+.jumbotron {
+	margin: 60px 0;
+	text-align: center;
+}
+
+.jumbotron h1 {
+	font-size: 72px;
+	line-height: 1;
+}
+
+.jumbotron .btn {
+	font-size: 21px;
+	padding: 14px 24px;
+}
+
+/* Supporting marketing content */
+.marketing {
+	margin: 60px 0;
+}
+
+.marketing p+h4 {
+	margin-top: 28px;
+}
+</style>
+
+{% load staticfiles %}
+<script type="text/javascript" src="{% static "jquery-1.9.1.js" %}" ></script>
+<script type="text/javascript" src="{% static "js/jquery-ui-1.10.3.custom.js"%}"></script>
+<link rel="stylesheet" type="text/css" href="{% static "css/bootstrap.css"%}">
+<link rel="stylesheet" type="text/css" href="{% static "css/bootstrap-responsive.css"%}">
+<script type="text/javascript" src="{% static "js/bootstrap.js"%}"></script>
+<script type="text/javascript" src="{% static "js/bootstrap.min.js"%}"></script>
+
+
+<link rel="stylesheet" type="text/css" href="{% static "css/ui-darkness/jquery-ui-1.10.3.custom.css"%}">
+<link rel="stylesheet" type="text/css" href="{% static "css/ui-darkness/jquery-ui-1.10.3.custom.min.css"%}">
+<link rel="stylesheet" type="text/css" href="{% static "css/normalize.css"%}">
+
+<!-- for The Calender add files of Js -->
+<link href="{% static "css/nvd3.css"%}" rel="stylesheet" type="text/css">
+<script src="{% static "js/d3v3.js"%}"></script>
+<script src="{% static "js/nvd3.js"%}"></script>
+<!-- including all the components so I don't have to minify every time I test in development -->
+<script src="{% static "js/tooltip.js"%}"></script>
+<script src="{% static "js/utils.js"%}"></script>
+<script src="{% static "js/axis.js"%}"></script>
+<script src="{% static "js/discreteBar.js"%}"></script>
+<script src="{% static "js/discreteBarChart.js"%}"></script>
+
+
+<!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+<!--[if lt IE 9]>
+      <script src="../assets/js/html5shiv.js"></script>
+    <![endif]-->
+
+<!-- Fav and touch icons -->
+<link rel="apple-touch-icon-precomposed" sizes="144x144"
+	href="../assets/ico/apple-touch-icon-144-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="114x114"
+	href="../assets/ico/apple-touch-icon-114-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="72x72"
+	href="../assets/ico/apple-touch-icon-72-precomposed.png">
+<link rel="apple-touch-icon-precomposed"
+	href="../assets/ico/apple-touch-icon-57-precomposed.png">
+</head>
+<script type="text/javascript">
+	$(document).ready(
+			function() {
+				$('#myTab a').click(function(e) {
+					e.preventDefault();
+					$(this).tab('show');
+
+					$(".collapse").collapse()
+				});
+				$('.dropdown-toggle').dropdown()
+				$('.table').addClass(
+						"table table-condensed table-hover table-striped");
+				$('.table1').addClass(
+						"table table-condensed table-hover table-striped");
+				$('.table2').addClass(
+						"table table-condensed table-hover table-striped");
+				$('.table3').addClass(
+						"table table-condensed table-hover table-striped");
+				$('#table4').addClass(
+						"table table-condensed table-hover table-striped");
+				
+			});
+</script>
+<script type="text/javascript">
+
+	function validateForm()
+	{
+		var x=document.forms["edgarForm"]["cik"].value;
+		if (x==null || x=="")
+		  {
+			  alert("Search and select a company from suggestions first.");
+			  return false;
+		  }
+	}
+	function cacheComp(valu) {
+		if (valu.length > 2) {
+			$("#id_cname").autocomplete({
+				source : "/ecnance/getComp_Cache/",
+				minLength : 2,
+				select : function(evenet, ui) {
+					$("#id_cik").val(ui.item.id);
+				},
+			});
+		}
+	}
+</script>
+<!-- for The Calender add Function of Js -->
+<style>
+
+
+svg {
+
+  display: block;
+  width: 1100px;
+  
+  text-align: center;
+  margin: auto;
+}
+
+#chart1 svg{
+ 
+  height: 339px;
+  min-width: 100;
+  min-height: 100px;
+/*
+  margin: 10px;
+  Minimum height and width is a good idea to prevent negative SVG dimensions...
+  For example width should be =< margin.left + margin.right + 1,
+  of course 1 pixel for the entire chart would not be very useful, BUT should not have errors
+*/
+}
+
+</style>
+<script type="text/javascript">
+nv.addGraph(function() {  
+  var chart = nv.models.discreteBarChart()
+      .x(function(d) { return d.label })
+      .y(function(d) { return d.value })
+      .staggerLabels(true)
+      //.staggerLabels(historicalBarChart[0].values.length > 8)
+      .tooltips(false)
+      .showValues(true)
+
+  d3.select('#chart1 svg')
+      .datum({{ HST_BalanceSheet|safe}})
+    .transition().duration(500)
+      .call(chart);
+
+  nv.utils.windowResize(chart.update);
+
+  return chart;
+});
+
+
+</script>
+<script type="text/javascript">
+nv.addGraph(function() {  
+  var chart = nv.models.discreteBarChart()
+      .x(function(d) { return d.label })
+      .y(function(d) { return d.value })
+      .staggerLabels(true)
+      //.staggerLabels(historicalBarChart[0].values.length > 8)
+      .tooltips(false)
+      .showValues(true)
+
+  d3.select('#chart2 svg')
+      .datum({{ HST_IncomeStatement|safe}})
+    .transition().duration(500)
+      .call(chart);
+
+  nv.utils.windowResize(chart.update);
+
+  return chart;
+});
+
+
+</script>
+
+<script type="text/javascript">
+nv.addGraph(function() {
+  var chart = nv.models.discreteBarChart()
+      .x(function(d) { return d.label })
+      .y(function(d) { return d.value })
+      .staggerLabels(true)
+      //.staggerLabels(historicalBarChart[0].values.length > 8)
+      .tooltips(false)
+      .showValues(true)
+
+  d3.select('#chart3 svg')
+      .datum({{ HST_ShareHolder|safe}})
+    .transition().duration(500)
+      .call(chart);
+
+  nv.utils.windowResize(chart.update);
+
+  return chart;
+});
+
+
+</script>
+<script type="text/javascript">
+nv.addGraph(function() {
+  var chart = nv.models.discreteBarChart()
+      .x(function(d) { return d.label })
+      .y(function(d) { return d.value })
+      .staggerLabels(true)
+      //.staggerLabels(historicalBarChart[0].values.length > 8)
+      .tooltips(false)
+      .showValues(true)
+
+  d3.select('#chart4 svg')
+      .datum({{ HST_Cashflow|safe}})
+    .transition().duration(500)
+      .call(chart);
+
+  nv.utils.windowResize(chart.update);
+
+  return chart;
+});
+
+
+</script>
+
+<script type="text/javascript">
+function income_statement()
+{
+	   document.getElementById("chart2").style.display='block';
+	  document.getElementById("chart1").style.display='none';
+	  document.getElementById("chart3").style.display='none';
+      document.getElementById("chart4").style.display='none';
+	/*  document.getElementById("chart2").style.visibility='visible';
+    document.getElementById("chart1").style.visibility='hidden';
+    document.getElementById("chart3").style.visibility='hidden';
+    document.getElementById("chart4").style.visibility='hidden'; 
+     */  
+      
+}
+function seEquity_statement()
+{
+ document.getElementById("chart3").style.display='block';
+      document.getElementById("chart1").style.display='none';
+      document.getElementById("chart2").style.display='none';
+      document.getElementById("chart4").style.display='none'; 
+      
+/* 	 document.getElementById("chart3").style.visibility='visible';
+    document.getElementById("chart1").style.visibility='hidden';
+    document.getElementById("chart2").style.visibility='hidden';
+    document.getElementById("chart4").style.visibility='hidden';  */
+      
+}
+function balanceSheet_statement()
+{
+	 document.getElementById("chart1").style.display='block';
+      document.getElementById("chart2").style.display='none';
+      document.getElementById("chart3").style.display='none';
+      document.getElementById("chart4").style.display='none'; 
+/* 	 document.getElementById("chart1").style.visibility='visible';
+    document.getElementById("chart2").style.visibility='hidden';
+    document.getElementById("chart3").style.visibility='hidden';
+    document.getElementById("chart4").style.visibility='hidden'; 
+       */
+}
+function cashflow_statement()
+{
+	 document.getElementById("chart4").style.display='block';
+      document.getElementById("chart2").style.display='none';
+      document.getElementById("chart3").style.display='none';
+      document.getElementById("chart1").style.dispaly='none';
+      /*  document.getElementById("chart4").style.visibility='visible';
+      document.getElementById("chart2").style.visibility='hidden';
+      document.getElementById("chart3").style.visibility='hidden';
+      document.getElementById("chart1").style.visibility='hidden';  */
+      
+}
+function fn()
+{
+	/* document.getElementById("char1").style.display='block' */
+	 document.getElementById("chart1").style.display='block';
+    
+}
+</script>
+
+
+<body onload="fn()">
+    
+	<div class="navbar navbar-inverse navbar-fixed-top">
+		<div class="navbar-inner">
+			<div class="container">
+				<button type="button" class="btn btn-navbar" data-toggle="collapse"
+					data-target=".nav-collapse">
+					<span class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="" href="#">  <img  style="float:left; width: 185px; height: 40px;" alt="asdfadsf" src="{% static "images/logo_update_5.png"%}"/> </a>
+				<div class="nav-collapse collapse">
+					<ul class="nav">
+						<li class="active"><a href="#">Home</a></li>
+						<li><a href="#about">About</a></li>
+						<li><a href="#contact">Contact</a></li>
+						<li class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown">Statments <b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="#">Balance Sheet</a></li>
+								<li><a href="#">Income Sheet</a></li>
+								<li><a href="#">Cash Flow Sheet</a></li>
+								<li class="divider"></li>
+								<li class="nav-header">Other Statments</li>
+								<li><a href="#">Separated link</a></li>
+								<li><a href="#">One more separated link</a></li>
+							</ul></li>
+					</ul>
+					<form class="navbar-form pull-right" action="">
+						<input class="span2" type="text" placeholder="Email"> <input
+							class="span2" type="password" placeholder="Password">
+						<button type="submit" class="btn">Sign in</button>
+					</form>
+				</div>
+				<!--/.nav-collapse -->
+			</div>
+		</div>
+	</div>
+
+	<div class="container">
+
+
+		<div class="jumbotron hero-unit">
+			<img  style="width: 1000px; height: 200px;" alt="asdfadsf" src="{% static "images/logo_update_5.png"%}"/>
+			
+
+			<form action="/ecnance/F1/" class="form-search well" name="edgarForm" method="post" onsubmit="return validateForm()" >
+				{% csrf_token %} <label>Ticker value & Year:</label> <input
+					type="text" autocomplete="off" placeholder="Ticker/CIK Value"
+					id="id_cname" name="cname" onkeypress="cacheComp(this.value)" /> <input
+					type="hidden" id="id_cik" name="cik" /> <input type="hidden"
+					id="year" name="year" />
+
+				<button class="btn btn-success" style="padding: 6px 6px;"
+					type="submit">Submit</button>
+
+			</form>
+
+		</div>
+		
+     {% if  HST_BalanceSheet %}
+         <div id="chart1" class="well" style="display: none;">
+           <svg></svg>
+        </div>
+    {% endif  %}
+    {% if  HST_IncomeStatement %}
+      <div id="chart2"  class="well" style="display: none;">
+        <svg></svg>
+      </div>
+    {% endif  %}
+    {% if  HST_ShareHolder %}
+      <div id="chart3" class="well" style="display: none;">
+        <svg></svg>
+      </div>
+    {% endif  %}
+    {% if  HST_Cashflow %}
+      <div id="chart4" class="well" style="display: none;">
+        <svg></svg>
+      </div>
+    {% endif  %} 
+		<div class="row-fluid marketing">
+
+			<div class="tabbable">
+
+				<ul class="nav nav-tabs ">
+					<li class="active"><a href="#tab1" data-toggle="tab">Statements</a></li>
+					<li><a href="#tab2" data-toggle="tab">Summary</a></li>
+					<li><a href="#tab3" data-toggle="tab">Key Ratios</a></li>
+					<li><a href="#tab4" data-toggle="tab">Valuations</a></li>
+					<li><a href="#tab5" data-toggle="tab">Industry</a></li>
+
+
+				</ul>
+				<div class="tab-content">
+					<div class="tab-pane active" id="tab1">
+						<div class="accordion" id="accordion2">
+							<div class="accordion-group">
+								<div class="accordion-heading">
+									<a class="accordion-toggle btn-info" data-toggle="collapse"
+										data-parent="#accordion2" href="#collapseOne" onclick="balanceSheet_statement()"> Balance
+										Sheet </a>
+								</div>
+								<div id="collapseOne" class="accordion-body collapse in">
+									<div class="accordion-inner">
+										<!-- Years tab   -->
+										<ul class="nav nav-tabs ">
+											<li class="active"><a href="#tabmin1" data-toggle="tab">{{ Current_Year|safe}}</a></li>
+											<li><a href="#tabmin2" data-toggle="tab">{{ Previous_Year|safe}}</a></li>
+										</ul>
+										<div class="tab-content">
+											<div class="tab-pane active" id="tabmin1">
+												<p>{{ BS_statement1|safe}}</p>
+											</div>
+											<div class="tab-pane" id="tabmin2">
+												<p>{{ BS_statement2|safe}}</p>
+											</div>
+										</div>
+										<!-- Years tab   -->
+									</div>
+								</div>
+							</div>
+							<div class="accordion-group">
+								<div class="accordion-heading">
+									<a class="accordion-toggle btn-info" data-toggle="collapse"
+										data-parent="#accordion2" href="#collapseTwo" onclick="income_statement()"> Income
+										Statement </a>
+								</div>
+								<div id="collapseTwo" class="accordion-body collapse">
+									<div class="accordion-inner">
+
+										<!-- Years tab   -->
+										<ul class="nav nav-tabs ">
+											<li class="active"><a href="#tabincome1"
+												data-toggle="tab">{{ Current_Year|safe}}</a></li>
+											<li><a href="#tabincome2" data-toggle="tab">{{ Previous_Year|safe}}</a></li>
+										</ul>
+										<div class="tab-content">
+											<div class="tab-pane active" id="tabincome1">
+												<p>{{ IN_statement1|safe}}</p>
+											</div>
+											<div class="tab-pane" id="tabincome2">
+												<p>{{ IN_statement2|safe}}</p>
+											</div>
+										</div>
+										<!-- Years tab   -->
+									</div>
+								</div>
+							</div>
+							<div class="accordion-group">
+								<div class="accordion-heading">
+									<a class="accordion-toggle btn-info" data-toggle="collapse"
+										data-parent="#accordion2" href="#collapseThree" onclick="cashflow_statement()""> Cashflow
+										Statement </a>
+								</div>
+								<div id="collapseThree" class="accordion-body collapse">
+									<div class="accordion-inner">
+										<!-- Years tab   -->
+										<ul class="nav nav-tabs ">
+											<li class="active"><a href="#tabcash1" data-toggle="tab">{{ Current_Year|safe}}</a></li>
+											<li><a href="#tabcash2" data-toggle="tab">{{ Previous_Year|safe}}</a></li>
+										</ul>
+										<div class="tab-content">
+											<div class="tab-pane active" id="tabcash1">
+												<p>{{ CF_statement1|safe}}</p>
+											</div>
+											<div class="tab-pane" id="tabcash2">
+												<p>{{ CF_statement2|safe}}</p>
+											</div>
+										</div>
+										<!-- Years tab   -->
+
+									</div>
+								</div>
+							</div>
+							<div class="accordion-group">
+								<div class="accordion-heading">
+									<a class="accordion-toggle btn-info" data-toggle="collapse"
+										data-parent="#accordion2" href="#collapseFour" onclick="seEquity_statement()">
+										Shareholder's Equity Statement </a>
+								</div>
+								<div id="collapseFour" class="accordion-body collapse">
+									<div class="accordion-inner">
+										<!-- Years tab   -->
+										<ul class="nav nav-tabs ">
+											<li class="active"><a href="#tabEquity1"
+												data-toggle="tab">{{ Current_Year|safe}}</a></li>
+											<li><a href="#tabEquity2" data-toggle="tab">{{ Previous_Year|safe}}</a></li>
+										</ul>
+										<div class="tab-content">
+											<div class="tab-pane active" id="tabEquity1">
+												<p>{{ SH_Equity1|safe}}</p>
+											</div>
+											<div class="tab-pane" id="tabEquity2">
+												<p>{{ SH_Equity2|safe}}</p>
+											</div>
+										</div>
+										<!-- Years tab   -->
+
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="tab-pane" id="tab2">
+						<p>Howdy, I'm in Statements.Howdy, I'm in Statements.Howdy,
+							I'm in Statements.Howdy, I'm in Statements.Howdy, I'm in
+							Statements.Howdy, I'm in Statements.</p>
+					</div>
+					<div class="tab-pane" id="tab3">
+						<!-- Years tab   -->
+						<ul class="nav nav-tabs ">
+							<li class="active"><a href="#tabkey1" data-toggle="tab"></a></li>
+							<li><a href="#tabkey3" data-toggle="tab">Gross Profit Margin</a></li>
+							<li><a href="#tabkey4" data-toggle="tab">Operating Profit Margin</a></li>
+							<li><a href="#tabkey5" data-toggle="tab">Quick Ratio</a></li>
+							<li><a href="#tabkey6" data-toggle="tab">Total Debt /Equity Ratio</a></li>
+							<li><a href="#tabkey7" data-toggle="tab">Return on Equity</a></li>
+							<li><a href="#tabkey8" data-toggle="tab">Assets Turnover</a></li>
+							<li><a href="#tabkey9" data-toggle="tab">Debt-To-Equity</a></li>
+							<li><a href="#tabkey10" data-toggle="tab">Inventory Turnover</a></li>
+							<li><a href="#tabkey11" data-toggle="tab">Average age of Inventory</a></li>
+							<li><a href="#tabkey12" data-toggle="tab">Intangible Assets</a></li>
+							<li><a href="#tabkey13" data-toggle="tab">Inventory Write Off</a></li>
+							<li><a href="#tabkey14" data-toggle="tab">Capital Structure</a></li>
+							
+						</ul>
+
+						<div class="tab-content">
+
+							<div class="tab-pane active" id="tabkey1">
+								<p>
+									
+								</p>
+
+							</div>
+							<div class="tab-pane" id="tabkey2">
+								<p>
+									keyratios2<br /> {{ KEY_RatiosBookMark2|safe}}
+								</p>
+							</div>
+
+							<div class="tab-pane" id="tabkey3">
+								<p class="btn btn-danger"
+									style="margin-bottom: 20px; font-size: 25px; font-family: sans-serif; font-weight: bold; cursor: default;">{{ GPM_A|safe}} $</p>
+									
+								<div class="alert alert-success">
+  												<button type="button" class="close" data-dismiss="alert">&times;</button>
+ 												 <strong>Formula =  </strong> ( revenues – cost of goods sold ) / revenues
+								</div>
+									
+								<p class="well"
+									style="margin-bottom: 10px; font-size: 25px; font-family: sans-serif; font-weight: bold;">Profitability
+									- Gross Profit Margin</p>
+
+								<p class="hero-unit"
+									style="font-size: 20px; text-align: left; font-family: inherit;; font-weight: normal; overflow: hidden;">Definition
+									of gross profit margin: “A financial metric used to assess a
+									firm's financial health by revealing the proportion of money
+									left over from revenues after accounting for the cost of goods
+									sold. Gross profit margin serves as the source for paying
+									additional expenses and future savings. ”</p>
+
+
+							</div>
+							<div class="tab-pane" id="tabkey4">
+								<p class="btn btn-danger"
+									style="margin-bottom: 20px; font-size: 25px; font-family: sans-serif; font-weight: bold; cursor: default;">{{ OPM_A|safe}} $</p>
+
+												<div class="alert alert-success">
+  												<button type="button" class="close" data-dismiss="alert">&times;</button>
+ 												 <strong>Formula =  </strong> Operating income / Net sales
+
+												</div>
+								<p class="well"
+									style="margin-bottom: 10px; font-size: 25px; font-family: sans-serif; font-weight: bold;">Profitability
+									- Operating Profit Margin</p>
+
+								<p class="hero-unit"
+									style="font-size: 20px; text-align: left; font-family: inherit;; font-weight: normal; overflow: hidden;">Definition
+									of Operating Profit Margin : “A ratio used to measure a
+									company's pricing strategy and operating efficiency. “</p>
+							</div>
+							<div class="tab-pane" id="tabkey5">
+								<p class="btn btn-danger"
+									style="margin-bottom: 20px; font-size: 25px; font-family: sans-serif; font-weight: bold; cursor: default;">{{ QR_A|safe}} $</p>
+												<div class="alert alert-success">
+  												<button type="button" class="close" data-dismiss="alert">&times;</button>
+ 												 <strong>Formula =  </strong> (Current Assets – Inventories) / Current Liabilities
+
+
+												</div>
+
+								<p class="well"
+									style="margin-bottom: 10px; font-size: 25px; font-family: sans-serif; font-weight: bold;">Solvency
+									– Quick Ratio</p>
+
+								<p class="hero-unit"
+									style="font-size: 20px; text-align: left; font-family: inherit;; font-weight: normal; overflow: hidden;">Definition
+									of Quick Ratio: “An indicator of a company's short-term
+									liquidity. The quick ratio measures a company's ability to meet
+									its short-term obligations with its most liquid assets. The
+									higher the quick ratio, the better the position of the company.
+									”</p>
+							</div>
+							<div class="tab-pane" id="tabkey6">
+								<p class="btn btn-danger"
+									style="margin-bottom: 20px; font-size: 25px; font-family: sans-serif; font-weight: bold; cursor: default;">{{ ER_A|safe}} $</p>
+												<div class="alert alert-success">
+  												<button type="button" class="close" data-dismiss="alert">&times;</button>
+ 												 <strong>Formula =  </strong> short-term debt + long-term debt / total assets
+
+
+
+												</div>
+
+								<p class="well"
+									style="margin-bottom: 10px; font-size: 25px; font-family: sans-serif; font-weight: bold;">Solvency
+									– Total Debt /Equity Ratio</p>
+
+								<p class="hero-unit"
+									style="font-size: 20px; text-align: left; font-family: inherit;; font-weight: normal; overflow: hidden;">Definition
+									of total debt ratio : “A metric used to measure a company's
+									financial risk by determining how much of the company's assets
+									have been financed by debt. Calculated by adding short-term and
+									long-term debt and then dividing by the company's total assets.
+									”</p>
+							</div>
+
+
+							<div class="tab-pane" id="tabkey7">
+								<p class="btn btn-danger"
+									style="margin-bottom: 20px; font-size: 25px; font-family: sans-serif; font-weight: bold; cursor: default;">{{ ROE_A|safe}} $</p>
+												<div class="alert alert-success">
+  												<button type="button" class="close" data-dismiss="alert">&times;</button>
+ 												 <strong>Formula =  </strong> Net income / Shareholders’ Equity
+ 												 </div>
+
+								<p class="well"
+									style="margin-bottom: 10px; font-size: 25px; font-family: sans-serif; font-weight: bold;">Efficiency
+									– Return on Equity (ROE)</p>
+
+								<p class="hero-unit"
+									style="font-size: 20px; text-align: left; font-family: inherit;; font-weight: normal; overflow: hidden;">Definition
+									of Return on Equity : “The amount of net income returned as a
+									percentage of shareholders equity. Return on equity measures a
+									corporation's profitability by revealing how much profit a
+									company generates with the money shareholders have invested.”</p>
+							</div>
+							<div class="tab-pane" id="tabkey8">
+								<p class="btn btn-danger"
+									style="margin-bottom: 20px; font-size: 25px; font-family: sans-serif; font-weight: bold; cursor: default;">{{ AT_A|safe}} $</p>
+												<div class="alert alert-success">
+  												<button type="button" class="close" data-dismiss="alert">&times;</button>
+ 												 <strong>Formula =  </strong> Revenue / Total Assets
+
+ 												 </div>
+
+								<p class="well"
+									style="margin-bottom: 10px; font-size: 25px; font-family: sans-serif; font-weight: bold;">Efficiency
+									– Assets Turnover</p>
+
+								<p class="hero-unit"
+									style="font-size: 20px; text-align: left; font-family: inherit;; font-weight: normal; overflow: hidden;">Definition
+									of Assets turnover : “The amount of sales generated for every
+									dollar's worth of assets. It is calculated by dividing sales in
+									dollars by assets in dollars. This ratio is more useful for
+									growth companies to check if in fact they are growing revenue
+									in proportion to sales. Assets turnover is also known as the
+									Asset Turnover Ratio. ”</p>
+							</div>
+
+							<div class="tab-pane" id="tabkey9">
+								<p class="btn btn-danger"
+									style="margin-bottom: 20px; font-size: 25px; font-family: sans-serif; font-weight: bold; cursor: default;">{{ DTE_A|safe}} $</p>
+												<div class="alert alert-success">
+  												<button type="button" class="close" data-dismiss="alert">&times;</button>
+ 												 <strong>Formula =  </strong> Total Liabilities / Total Shareholders’ Equity
+
+
+ 												 </div>
+
+								<p class="well"
+									style="margin-bottom: 10px; font-size: 25px; font-family: sans-serif; font-weight: bold;">Liquidity
+									– Debt-To-Equity</p>
+
+								<p class="hero-unit"
+									style="font-size: 20px; text-align: left; font-family: inherit;; font-weight: normal; overflow: hidden;">Definition
+									of Debt-To-Equity : “A measure of a company's financial
+									leverage calculated by dividing its total liabilities by
+									stockholders' equity. It indicates what proportion of equity
+									and debt the company is using to finance its assets. ”</p>
+							</div>
+
+							<div class="tab-pane" id="tabkey10">
+								<p class="btn btn-danger"
+									style="margin-bottom: 20px; font-size: 25px; font-family: sans-serif; font-weight: bold; cursor: default;">{{ IT_A|safe}} $</p>
+												<div class="alert alert-success">
+  												<button type="button" class="close" data-dismiss="alert">&times;</button>
+ 												 <strong>Formula =  </strong> Sales / Inventory OR Cost of goods sold / Average inventory
+ 												 </div>
+
+								<p class="well"
+									style="margin-bottom: 10px; font-size: 25px; font-family: sans-serif; font-weight: bold;">Liquidity
+									– Inventory Turnover</p>
+
+								<p class="hero-unit"
+									style="font-size: 20px; text-align: left; font-family: inherit;; font-weight: normal; overflow: hidden;">Definition
+									of Inventory Turnover: “A ratio showing how many times a
+									company's inventory is sold and replaced over a period. The
+									days in the period can then be divided by the inventory
+									turnover formula to calculate the days it takes to sell the
+									inventory on hand or "inventory turnover days."”</p>
+							</div>
+
+							<div class="tab-pane" id="tabkey11">
+								<p class="btn btn-danger"
+									style="margin-bottom: 20px; font-size: 25px; font-family: sans-serif; font-weight: bold; cursor: default;">(Some
+									Number) 0.00005 $</p>
+									
+
+								<p class="well"
+									style="margin-bottom: 10px; font-size: 25px; font-family: sans-serif; font-weight: bold;">Liquidity
+									– Average age of Inventory (Days)</p>
+
+								<p class="hero-unit"
+									style="font-size: 20px; text-align: left; font-family: inherit;; font-weight: normal; overflow: hidden;">Definition
+									of Average age of Inventory: “The average number of days it
+									takes for a firm to sell to consumers a product it is currently
+									holding as inventory. The formula to calculate the average age
+									of inventory is C/G x 365, where C is the average cost of
+									inventory at its present level and G is the cost of goods sold,
+									multiplied by the number of days in a year.”</p>
+							</div>
+
+							<div class="tab-pane" id="tabkey12">
+								<p class="btn btn-danger"
+									style="margin-bottom: 20px; font-size: 25px; font-family: sans-serif; font-weight: bold; cursor: default;">(Some
+									Number) 0.00005 $</p>
+
+
+								<p class="well"
+									style="margin-bottom: 10px; font-size: 25px; font-family: sans-serif; font-weight: bold;">Liquidity
+									– Intangible Assets</p>
+
+								<p class="hero-unit"
+									style="font-size: 20px; text-align: left; font-family: inherit;; font-weight: normal; overflow: hidden;">Definition
+									of Intangible Asset: “An asset that is not physical in nature.
+									Corporate intellectual property (items such as patents,
+									trademarks, copyrights, business methodologies), goodwill and
+									brand recognition are all common intangible assets in today's
+									marketplace. An intangible asset can be classified as either
+									indefinite or definite depending on the specifics of that
+									asset. A company brand name is considered to be an indefinite
+									asset, as it stays with the company as long as the company
+									continues operations. However, if a company enters a legal
+									agreement to operate under another company's patent, with no
+									plans of extending the agreement, it would have a limited life
+									and would be classified as a definite asset.”</p>
+							</div>
+
+							<div class="tab-pane" id="tabkey13">
+								<p class="btn btn-danger"
+									style="margin-bottom: 20px; font-size: 25px; font-family: sans-serif; font-weight: bold; cursor: default;">(Some
+									Number) 0.00005 $</p>
+
+
+								<p class="well"
+									style="margin-bottom: 10px; font-size: 25px; font-family: sans-serif; font-weight: bold;">Liquidity
+									– Inventory Write Off)</p>
+
+								<p class="hero-unit"
+									style="font-size: 20px; text-align: left; font-family: inherit;; font-weight: normal; overflow: hidden;">Definition
+									of Inventory Write-Off : “An accounting term for the formal
+									recognition that a portion of a company's inventory no longer
+									has value. An inventory write-off may be handled in the
+									company's books by charging it to the cost of goods sold or by
+									offsetting the obsolete inventory allowance. Most inventory
+									write-offs are small, annual expenses; a large inventory
+									write-off (such as one caused by a warehouse fire) may be
+									categorized as a non-recurring loss. If inventory still has
+									some value, it will be written down instead of written off.
+									Other items that companies commonly write off include
+									uncollectable accounts receivable and obsolete fixed assets. “
+								</p>
+							</div>
+
+							<div class="tab-pane" id="tabkey14">
+								<p class="btn btn-danger"
+									style="margin-bottom: 20px; font-size: 25px; font-family: sans-serif; font-weight: bold; cursor: default;">{{ LDT_A|safe}} $</p>
+																					<div class="alert alert-success">
+  												<button type="button" class="close" data-dismiss="alert">&times;</button>
+ 												 <strong>Formula =  </strong> Long-term debt / (Long-term debt + preferred stock + common stock)
+ 												 </div>
+
+
+								<p class="well"
+									style="margin-bottom: 10px; font-size: 25px; font-family: sans-serif; font-weight: bold;">Capital
+									Structure – Long-Term Debt to Capitalization Ratio</p>
+
+								<p class="hero-unit"
+									style="font-size: 20px; text-align: left; font-family: inherit;; font-weight: normal; overflow: hidden;">Definition
+									for Long-Term Debt to Capitalization Ratio : “A ratio showing
+									the financial leverage of a firm, calculated by dividing
+									long-term debt by the amount of capital available.”</p>
+							</div>
+
+						</div>
+						<!-- Years tab   -->
+
+					</div>
+					<div class="tab-pane" id="tab4">
+						<p>Howdy, I'm in Valuations 2.</p>
+					</div>
+					<div class="tab-pane" id="tab5">
+						<p>Howdy, I'm in Industry 2.</p>
+					</div>
+				</div>
+			</div>
+
+
+		</div>
+	</div>
+	<div></div>
+	<div></div>
+</body>
+</html>
